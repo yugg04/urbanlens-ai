@@ -12,17 +12,17 @@ from tavily import TavilyClient
 
 
 # ─────────────────────────────────────────────
-# Page Config
+# PAGE CONFIG
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="UrbanLens — AI City Intelligence Agent",
     page_icon="🏙️",
-    layout="wide",
+    layout="wide"
 )
 
 
 # ─────────────────────────────────────────────
-# Session State
+# SESSION STATE
 # ─────────────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -41,7 +41,7 @@ if "tool_results_queue" not in st.session_state:
 
 
 # ─────────────────────────────────────────────
-# Tools
+# WEATHER TOOL
 # ─────────────────────────────────────────────
 @tool
 def get_weather(city: str) -> str:
@@ -58,31 +58,43 @@ def get_weather(city: str) -> str:
     )
 
     try:
+
         response = requests.get(url, timeout=8)
+
         data = response.json()
 
         if str(data.get("cod")) != "200":
-            return f"Error: {data.get('message', 'Could not fetch weather')}"
+            return f"Error: {data.get('message')}"
 
         temp = data["main"]["temp"]
+
         desc = data["weather"][0]["description"]
+
         humidity = data["main"]["humidity"]
+
         feels_like = data["main"]["feels_like"]
 
         return (
-            f"Weather in {city}: {desc}, {temp}°C "
-            f"(feels like {feels_like}°C), humidity {humidity}%"
+            f"Weather in {city}: {desc}, "
+            f"{temp}°C "
+            f"(Feels like {feels_like}°C), "
+            f"Humidity {humidity}%"
         )
 
     except Exception as e:
-        return f"Error fetching weather: {str(e)}"
+
+        return f"Weather error: {str(e)}"
 
 
+# ─────────────────────────────────────────────
+# NEWS TOOL
+# ─────────────────────────────────────────────
 @tool
 def get_news(city: str) -> str:
     """Get latest news about a city"""
 
     try:
+
         tavily_client = TavilyClient(
             api_key=os.getenv("TAVILY_API_KEY")
         )
@@ -98,21 +110,30 @@ def get_news(city: str) -> str:
         if not results:
             return f"No news found for {city}"
 
-        news_list = []
+        news_items = []
 
         for r in results:
+
             title = r.get("title", "No title")
+
             url = r.get("url", "")
+
             snippet = r.get("content", "")
 
-            news_list.append(
-                f"• {title}\n🔗 {url}\n{snippet[:120]}..."
+            news_items.append(
+                f"• {title}\n"
+                f"🔗 {url}\n"
+                f"{snippet[:120]}..."
             )
 
-        return f"Latest news in {city}:\n\n" + "\n\n".join(news_list)
+        return (
+            f"Latest news in {city}:\n\n"
+            + "\n\n".join(news_items)
+        )
 
     except Exception as e:
-        return f"Error fetching news: {str(e)}"
+
+        return f"News error: {str(e)}"
 
 
 TOOLS = [get_weather, get_news]
@@ -147,23 +168,25 @@ st.caption(
 
 
 # ─────────────────────────────────────────────
-# Display Messages
+# DISPLAY MESSAGES
 # ─────────────────────────────────────────────
 for msg in st.session_state.messages:
 
     if msg["role"] == "user":
 
         with st.chat_message("user"):
+
             st.markdown(msg["content"])
 
     else:
 
         with st.chat_message("assistant"):
+
             st.markdown(msg["content"])
 
 
 # ─────────────────────────────────────────────
-# Approval UI
+# TOOL APPROVAL UI
 # ─────────────────────────────────────────────
 if (
     st.session_state.awaiting_approval
@@ -190,12 +213,15 @@ if (
             if tool_fn:
 
                 try:
+
                     result = tool_fn.invoke(tc["args"])
 
                 except Exception as e:
+
                     result = f"Tool error: {e}"
 
             else:
+
                 result = "Unknown tool"
 
             st.session_state.messages.append({
@@ -211,6 +237,7 @@ if (
             )
 
             st.session_state.pending_tool_call = None
+
             st.session_state.awaiting_approval = False
 
             st.session_state.tool_results_queue.append(
@@ -239,6 +266,7 @@ if (
             )
 
             st.session_state.pending_tool_call = None
+
             st.session_state.awaiting_approval = False
 
             st.session_state.tool_results_queue.append(
@@ -249,7 +277,7 @@ if (
 
 
 # ─────────────────────────────────────────────
-# Continue After Tool Result
+# CONTINUE AFTER TOOL
 # ─────────────────────────────────────────────
 if (
     st.session_state.tool_results_queue
@@ -260,11 +288,22 @@ if (
 
     with st.spinner("Thinking..."):
 
-        response = llm.invoke(
-            st.session_state.lc_messages
-        )
+        try:
+
+            response = llm.invoke(
+                st.session_state.lc_messages
+            )
+
+        except Exception as e:
+
+            st.error(str(e))
+            st.stop()
 
         if response.tool_calls:
+
+            st.session_state.lc_messages.append(
+                response
+            )
 
             tc = response.tool_calls[0]
 
@@ -291,7 +330,7 @@ if (
 
 
 # ─────────────────────────────────────────────
-# Chat Input
+# CHAT INPUT
 # ─────────────────────────────────────────────
 user_input = st.chat_input(
     "Ask about weather or news..."
@@ -314,11 +353,22 @@ if (
 
     with st.spinner("Thinking..."):
 
-        response = llm.invoke(
-            st.session_state.lc_messages
-        )
+        try:
+
+            response = llm.invoke(
+                st.session_state.lc_messages
+            )
+
+        except Exception as e:
+
+            st.error(str(e))
+            st.stop()
 
         if response.tool_calls:
+
+            st.session_state.lc_messages.append(
+                response
+            )
 
             tc = response.tool_calls[0]
 
