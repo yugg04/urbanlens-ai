@@ -83,22 +83,7 @@ Tell me weather and news in Delhi
 
 # 🚀 Deployment
 
-This project can be deployed using Streamlit Cloud.
-
-## Streamlit Secrets
-
-Add these secrets in:
-
-```text id="jlwm76"
-App Settings → Secrets
-```
-
-```toml id="jlwmb9"
-MISTRAL_API_KEY="your_key"
-OPENWEATHER_API_KEY="your_key"
-TAVILY_API_KEY="your_key"
-```
-
+The application can be deployed using Streamlit Cloud and connected securely with environment secrets for API management.
 ---
 
 # 🧠 How It Works
@@ -115,7 +100,7 @@ TAVILY_API_KEY="your_key"
 
 # 👨‍💻 Author
 
-Built by YUG
+Built by YUG KHATRI
 
 ---
 
