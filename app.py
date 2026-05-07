@@ -127,6 +127,7 @@ TOOL_MAP = {
 # ─────────────────────────────────────────────
 @st.cache_resource
 def get_llm():
+
     return ChatMistralAI(
         model="mistral-small-2506"
     ).bind_tools(TOOLS)
@@ -151,16 +152,18 @@ st.caption(
 for msg in st.session_state.messages:
 
     if msg["role"] == "user":
+
         with st.chat_message("user"):
             st.markdown(msg["content"])
 
     else:
+
         with st.chat_message("assistant"):
             st.markdown(msg["content"])
 
 
 # ─────────────────────────────────────────────
-# Tool Approval UI
+# Approval UI
 # ─────────────────────────────────────────────
 if (
     st.session_state.awaiting_approval
@@ -177,6 +180,7 @@ if (
 
     col1, col2 = st.columns(2)
 
+    # APPROVE
     with col1:
 
         if st.button("Approve"):
@@ -184,10 +188,13 @@ if (
             tool_fn = TOOL_MAP.get(tc["name"])
 
             if tool_fn:
+
                 try:
                     result = tool_fn.invoke(tc["args"])
+
                 except Exception as e:
                     result = f"Tool error: {e}"
+
             else:
                 result = "Unknown tool"
 
@@ -212,6 +219,7 @@ if (
 
             st.rerun()
 
+    # DENY
     with col2:
 
         if st.button("Deny"):
@@ -257,10 +265,6 @@ if (
         )
 
         if response.tool_calls:
-
-            st.session_state.lc_messages.append(
-                response
-            )
 
             tc = response.tool_calls[0]
 
@@ -315,10 +319,6 @@ if (
         )
 
         if response.tool_calls:
-
-            st.session_state.lc_messages.append(
-                response
-            )
 
             tc = response.tool_calls[0]
 
