@@ -4,6 +4,12 @@ UrbanLens is an AI-powered city assistant that provides real-time weather update
 
 ---
 
+# 🚀 Live Demo
+
+[![Open UrbanLens](https://img.shields.io/badge/Live-Demo-00C853?style=for-the-badge&logo=streamlit&logoColor=white)](https://urbanlens-ai-yk.streamlit.app/)
+
+---
+
 # ✨ Features
 
 * 🌦️ Real-time weather updates
